@@ -277,5 +277,18 @@ class LinksController extends AppController
         $this->viewBuilder()->setOption('serialize', 'response');
     }
 
+    public function latest()
+    {
+        $this->request->allowMethod(['get']);
+
+        $links = $this->Links->find()
+            ->select(['url', 'short_tt'])
+            ->order(['created' => 'DESC'])
+            ->limit(10)
+            ->all();
+
+        $this->set('response', $links);
+        $this->viewBuilder()->setOption('serialize', 'response');
+    }
 
 }

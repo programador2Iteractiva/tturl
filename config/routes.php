@@ -99,6 +99,7 @@ $routes->scope('/api', function (RouteBuilder $builder) {
     $builder->connect('/updateLinks', ['controller' => 'Links', 'action' => 'updateLinks']);
     $builder->connect('/updateshortlinks', ['controller' => 'Links', 'action' => 'updateUrlShort']);
     $builder->connect('/viewvisitcounts', ['controller' => 'Links', 'action' => 'getVisitCount']);
+    $builder->connect('/latest-links', ['controller' => 'Links', 'action' => 'latest']);
 });
 
 /*
