@@ -1,5 +1,21 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # --- INICIO: SECCIÓN PARA MANEJAR CORS DINÁMICAMENTE ---
+    SetEnvIf Origin "http(s)?://(localhost:5173|tools\.interactiva\.net\.co)$" ORIGIN=$0
+
+    Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT, PATCH" env=ORIGIN
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With" env=ORIGIN
+    Header always set Access-Control-Allow-Credentials "true" env=ORIGIN
+    Header always set Access-Control-Allow-Origin %{ORIGIN}e env=ORIGIN
+
+    # Si la petición entrante es OPTIONS, respóndela con un "200 OK" y detén el procesamiento.
+    # Esto evita que la petición llegue a CakePHP, resolviendo el problema de pre-vuelo.
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=200,L]
+    # --- FIN: SECCIÓN PARA MANEJAR CORS ---
+
+    # Estas son tus reglas originales de CakePHP. Deben ir DESPUÉS del bloque de CORS.
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>

@@ -27,7 +27,7 @@ class LinksController extends AppController
 
         $this->hashIds = new Hashids(Security::getSalt());
 
-        $this->Authentication->allowUnauthenticated(['view']);
+        $this->Authentication->allowUnauthenticated(['view', 'updateUrlShort', 'getVisitCount']);
     }
 
     public function index(): void
@@ -183,5 +183,99 @@ class LinksController extends AppController
         $this->set('response', $response);
         $this->viewBuilder()->setOption('serialize', 'response');
     }
+    
+    
+    public function updateUrlShort()
+    {
+        $this->getRequest()->allowMethod(['post']);
+    
+        $short_tt = $this->request->getData('short_tt');
+        $newUrl   = $this->request->getData('url');
+    
+        $response = [
+            'success' => false,
+            'message' => 'short_tt no encontrado',
+            'short_tt' => $short_tt,
+            'url' => null
+        ];
+    
+        if (!empty($short_tt) && !empty($newUrl)) {
+    
+            $existingLink = $this->Links->find()
+                ->where(['url' => $newUrl])
+                ->first();
+    
+            if ($existingLink) {
+                $response = [
+                    'success' => false,
+                    'message' => 'La URL ya existe asociada al short_tt: ' . $existingLink->short_tt,
+                    'short_tt' => $existingLink->short_tt,
+                    'url' => $existingLink->url
+                ];
+            } else {
+                
+                $link = $this->Links->find()
+                    ->where(['short_tt' => $short_tt])
+                    ->first();
+    
+                if ($link) {
+                    $link->url = $newUrl;
+    
+                    if ($this->Links->save($link)) {
+                        $response = [
+                            'success' => true,
+                            'message' => 'URL actualizada correctamente',
+                            'short_tt' => $short_tt,
+                            'url' => $newUrl
+                        ];
+                    } else {
+                        $response['message'] = 'No se pudo guardar el cambio';
+                    }
+                }
+            }
+        } else {
+            $response['message'] = 'short_tt y url son obligatorios';
+        }
+    
+        $this->set('response', $response);
+        $this->viewBuilder()->setOption('serialize', 'response');
+    }
+    
+    
+    public function getVisitCount()
+    {
+        $this->getRequest()->allowMethod(['post']);
+    
+        $short_tt = $this->request->getData('short_tt');
+    
+        $response = [
+            'success' => false,
+            'message' => 'short_tt es obligatorio',
+            'short_tt' => $short_tt,
+            'visit_count' => null
+        ];
+    
+        if (!empty($short_tt)) {
+            $link = $this->Links->find()
+                ->select(['short_tt', 'visit_count'])
+                ->where(['short_tt' => $short_tt])
+                ->first();
+    
+            if ($link) {
+                $response = [
+                    'success' => true,
+                    'message' => 'Contador obtenido correctamente',
+                    'short_tt' => $link->short_tt,
+                    'visit_count' => $link->visit_count
+                ];
+            } else {
+                $response['message'] = 'short_tt no encontrado';
+            }
+        }
+    
+        $this->set('response', $response);
+        $this->viewBuilder()->setOption('serialize', 'response');
+    }
+
 
 }
